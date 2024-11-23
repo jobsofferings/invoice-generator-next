@@ -22,10 +22,15 @@ import {
   Text,
   View,
   Document,
-  PDFViewer,
   StyleSheet,
   Image as PDFImage,
 } from "@react-pdf/renderer";
+import dynamic from 'next/dynamic';
+const PDFViewer = dynamic(
+  () => import('@react-pdf/renderer').then((mod) => mod.PDFViewer),
+  { ssr: false }
+);
+
 
 const styles = StyleSheet.create({
   page: {
@@ -128,7 +133,7 @@ export default function InvoiceGenerator() {
 
       <div className="flex flex-row justify-center md:justify-between w-full bg-muted/20 mt-4 p-4 rounded-md">
         <div className="rounded-md w-full p-4 flex flex-col gap-6 justify-center align-middle items-center">
-          <div className="grid w-full w-full items-center gap-1.5">
+          <div className="grid w-full items-center gap-1.5">
             <Select
               onValueChange={(value) =>
                 setInvoice({
@@ -163,7 +168,7 @@ export default function InvoiceGenerator() {
           </div>
 
           {invoice.type == "custom" && (
-            <div className="grid w-full w-full items-center bg-muted/20 p-2 rounded-md border-2">
+            <div className="grid w-full items-center bg-muted/20 p-2 rounded-md border-2">
               <Label
                 htmlFor="customType"
                 className="text-purple-500 font-semibold text-start"
@@ -183,7 +188,7 @@ export default function InvoiceGenerator() {
           )}
 
           {/* logo */}
-          <div className="grid w-full w-full items-center bg-muted/20 p-2 rounded-md border-2">
+          <div className="grid w-full items-center bg-muted/20 p-2 rounded-md border-2">
             <Label
               htmlFor="logo"
               className="text-purple-500 font-semibold text-start"
@@ -227,7 +232,7 @@ export default function InvoiceGenerator() {
 
                   <button
                     className="bg-muted/20 font-semibold p-2 rounded-md w-full text-muted-foreground shadow-md"
-                    onClick={() =>setInvoice({ ...invoice, logo: undefined })}
+                    onClick={() => setInvoice({ ...invoice, logo: undefined })}
                   >
                     Remove Logo
                   </button>
@@ -236,7 +241,7 @@ export default function InvoiceGenerator() {
             </div>
           </div>
 
-          <div className="grid w-full w-full items-center bg-muted/20 p-2 rounded-md border-2">
+          <div className="grid w-full items-center bg-muted/20 p-2 rounded-md border-2">
             <Label
               htmlFor="from"
               className="text-purple-500 font-semibold text-start"
@@ -253,7 +258,7 @@ export default function InvoiceGenerator() {
             />
           </div>
 
-          <div className="grid w-full w-full items-center bg-muted/20 p-2 rounded-md border-2">
+          <div className="grid w-full items-center bg-muted/20 p-2 rounded-md border-2">
             <Label
               htmlFor="to"
               className="text-purple-500 font-semibold text-start"
@@ -270,7 +275,7 @@ export default function InvoiceGenerator() {
             />
           </div>
 
-          <div className="grid w-full w-full items-center bg-muted/20 p-2 rounded-md border-2">
+          <div className="grid w-full items-center bg-muted/20 p-2 rounded-md border-2">
             <Label
               htmlFor="invnumber"
               className="text-purple-500 font-semibold text-start"
@@ -289,7 +294,7 @@ export default function InvoiceGenerator() {
             />
           </div>
 
-          <div className="grid w-full w-full items-center bg-muted/20 p-2 rounded-md border-2">
+          <div className="grid w-full items-center bg-muted/20 p-2 rounded-md border-2">
             <Label
               htmlFor="date"
               className="text-purple-500 font-semibold text-start"
@@ -317,7 +322,7 @@ export default function InvoiceGenerator() {
             </Popover>
           </div>
 
-          <div className="grid w-full w-full items-center bg-muted/20 p-2 rounded-md border-2">
+          <div className="grid w-full items-center bg-muted/20 p-2 rounded-md border-2">
             <Label
               htmlFor="due"
               className="text-purple-500 font-semibold text-start"
@@ -345,7 +350,7 @@ export default function InvoiceGenerator() {
             </Popover>
           </div>
 
-          <div className="grid w-full w-full items-center bg-muted/20 p-4 rounded-md">
+          <div className="grid w-full items-center bg-muted/20 p-4 rounded-md">
             <Label
               htmlFor="items"
               className="text-purple-500 font-semibold text-center text-lg"
@@ -363,7 +368,7 @@ export default function InvoiceGenerator() {
                 >
                   Item {index + 1}
                 </Label>
-                <div className="grid w-full w-full items-center p-2 rounded-md border-2">
+                <div className="grid w-full items-center p-2 rounded-md border-2">
                   <Label
                     htmlFor={`description-${index}`}
                     className="text-purple-500 font-semibold text-start"
@@ -388,7 +393,7 @@ export default function InvoiceGenerator() {
                     }
                   />
                 </div>
-                <div className="grid w-full w-full items-center p-2 rounded-md border-2">
+                <div className="grid w-full items-center p-2 rounded-md border-2">
                   <Label
                     htmlFor={`price-${index}`}
                     className="text-purple-500 font-semibold text-start"
@@ -413,7 +418,7 @@ export default function InvoiceGenerator() {
                     }
                   />
                 </div>
-                <div className="grid w-full w-full items-center p-2 rounded-md border-2">
+                <div className="grid w-full items-center p-2 rounded-md border-2">
                   <Label
                     htmlFor={`quantity-${index}`}
                     className="text-purple-500 font-semibold text-start"
@@ -439,7 +444,7 @@ export default function InvoiceGenerator() {
                   />
                 </div>
 
-                <div className="grid w-full w-full items-center p-2 rounded-md border-2">
+                <div className="grid w-full items-center p-2 rounded-md border-2">
                   <Label
                     htmlFor={`note-${index}`}
                     className="text-purple-500 font-semibold text-start"
@@ -500,7 +505,7 @@ export default function InvoiceGenerator() {
             </button>
           </div>
 
-          <div className="grid w-full w-full items-center bg-muted/20 p-2 rounded-md border-2">
+          <div className="grid w-full items-center bg-muted/20 p-2 rounded-md border-2">
             <Label
               htmlFor="note"
               className="text-purple-500 font-semibold text-start"
@@ -611,7 +616,7 @@ export default function InvoiceGenerator() {
             )}
 
             {invoice.discount != undefined && (
-              <div className="grid w-full w-full items-center bg-muted/20 p-2 rounded-md border-2 mt-4">
+              <div className="grid w-full items-center bg-muted/20 p-2 rounded-md border-2 mt-4">
                 <Label
                   htmlFor="discount"
                   className="text-purple-500 font-semibold"
@@ -634,7 +639,7 @@ export default function InvoiceGenerator() {
             )}
 
             {invoice.shipping != undefined && (
-              <div className="grid w-full w-full items-center bg-muted/20 p-2 rounded-md border-2 mt-4">
+              <div className="grid w-full items-center bg-muted/20 p-2 rounded-md border-2 mt-4">
                 <Label
                   htmlFor="shipping"
                   className="text-purple-500 font-semibold"
@@ -679,15 +684,22 @@ export default function InvoiceGenerator() {
             Generate Invoice
           </button>
         </div>
-        <div className="hidden md:block w-full h-screen shadow-md p-4" >
+        <div className="hidden md:block w-full h-screen shadow-md p-4">
           <PDFViewer width="100%" height="100%">
-            <Document title={(invoice.type === "custom"
-                    ? invoice.customType
-                    : invoice.type) + "-" + invoice.id } >
+            <Document
+              title={
+                (invoice.type === "custom"
+                  ? invoice.customType
+                  : invoice.type) +
+                "-" +
+                invoice.invnumber
+              }
+            >
               <Page size="A4" style={styles.page}>
                 {/* Logo */}
-                {invoice.logo ? <PDFImage src={invoice.logo} style={styles.logo} /> : null}
-
+                {invoice.logo ? (
+                  <PDFImage src={invoice.logo} style={styles.logo} />
+                ) : null}
 
                 {/* Header */}
                 <Text style={styles.header}>
