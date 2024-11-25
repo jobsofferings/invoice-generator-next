@@ -18,10 +18,14 @@ import {
 } from "@/components/ui/popover";
 import { ImageIcon } from "lucide-react";
 import InvoiceDocument from "@/components/invoice-document";
-import { PDFDownloadLink } from "@react-pdf/renderer";
 import dynamic from "next/dynamic";
 const PDFViewer = dynamic(
   () => import("@react-pdf/renderer").then((mod) => mod.PDFViewer),
+  { ssr: false }
+);
+
+const PDFDownloadLink = dynamic(
+  () => import("@react-pdf/renderer").then((mod) => mod.PDFDownloadLink),
   { ssr: false }
 );
 
@@ -65,7 +69,7 @@ export default function InvoiceGenerator() {
     ],
   });
   return (
-    <div className="min-h-screen flex flex-col container mx-auto w-11/12 pt-24 items-center">
+    <div className="min-h-screen flex flex-col container mx-auto w-full md:w-11/12 pt-24 items-center">
       <div className="w-full flex flex-col items-center bg-muted/20 p-4 px-2 rounded-md shadow-md">
         <div className="text-primary font-black text-xl w-full text-center uppercase">
           Free Invoice Generator
