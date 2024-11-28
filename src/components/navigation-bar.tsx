@@ -7,6 +7,7 @@ import {
   MenuIcon,
   Moon,
   Sun,
+  ComputerIcon
 } from "lucide-react";
 
 export default function NavigationBar() {
@@ -33,12 +34,18 @@ export default function NavigationBar() {
             <div className="hidden lg:block w-fit">
               {theme == "light" && (
                 <Sun
-                  className="p-2 w-8 h-8 rounded-md text-muted-foreground stroke-black fill-black bg-white shadow-md"
+                  className="p-2 w-8 h-8 rounded-md text-muted-foreground stroke-black fill-white bg-muted/40 shadow-md"
                   onClick={() => setTheme("dark")}
                 />
               )}
               {theme == "dark" && (
                 <Moon
+                  className="p-2 w-8 h-8 rounded-md text-muted-foreground stroke-white fill-black bg-muted/40"
+                  onClick={() => setTheme("light")}
+                />
+              )}
+              {theme == "system" && (
+                <ComputerIcon
                   className="p-2 w-8 h-8 rounded-md text-muted-foreground stroke-black fill-black bg-white"
                   onClick={() => setTheme("light")}
                 />
@@ -87,6 +94,15 @@ export default function NavigationBar() {
             >
               <Moon className="stroke-purple-500 fill-purple-500"/>
               <span>Dark Mode</span>
+            </div>
+          )}
+          {theme == "system" && (
+            <div
+              onClick={() => setTheme("light")}
+              className="flex gap-2 items-center p-2 rounded-md border-2 border-gray-800/20 bg-gray-800/20 hover:bg-gray-800/30 transition-color duration-300 text-gray-400 shadow-md w-full justify-center"
+            >
+              <ComputerIcon className="stroke-purple-500 fill-purple-500"/>
+              <span>System Mode</span>
             </div>
           )}
         </div>
