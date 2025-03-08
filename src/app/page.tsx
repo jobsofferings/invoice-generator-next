@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import {
   Select,
@@ -19,6 +19,7 @@ import {
 import { ImageIcon } from "lucide-react";
 import InvoiceDocument from "@/components/invoice-document";
 import dynamic from "next/dynamic";
+import { getUserInfoList, getCompanyLogoList, getMarksWithCompany, getInformationWithCompany } from "@/lib/utils";
 const PDFViewer = dynamic(
   () => import("@react-pdf/renderer").then((mod) => mod.PDFViewer),
   { ssr: false }
@@ -35,6 +36,7 @@ interface InvoiceGeneratorProps {
   type: "invoice" | "estimate" | "quote" | "custom";
   customType?: string;
   logo?: string;
+  logoPosition?: "left" | "center" | "right";
   from: string;
   to: string;
   invnumber: string;
@@ -50,16 +52,32 @@ interface InvoiceGeneratorProps {
   tax?: number;
   discount?: number;
   shipping?: number;
+  additionalInfo?: string;
+  signature?: string;
+  signatureText?: string;
+  marks?: string;
+  currency?: string;
 }
 
 export default function InvoiceGenerator() {
+  const [isClient, setIsClient] = useState(false);
+  const userInfoList = getUserInfoList();
+  const companyLogoList = getCompanyLogoList();
+  const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
+  
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+  
   const [invoice, setInvoice] = useState<InvoiceGeneratorProps>({
     type: "invoice",
+    logoPosition: "left",
     from: "",
     to: "",
     invnumber: "",
     date: new Date().toISOString(),
     due: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString(),
+    currency: "USD",
     items: [
       {
         description: "Item 1",
@@ -68,6 +86,41 @@ export default function InvoiceGenerator() {
       },
     ],
   });
+  
+  const handleUserSelect = (userId: string) => {
+    const selectedUser = userInfoList.find(user => user.name === userId);
+    if (selectedUser) {
+      setInvoice({
+        ...invoice,
+        signatureText: selectedUser.name,
+        signature: selectedUser.sign_png
+      });
+    }
+  };
+  
+  const handleCompanySelect = (companyName: string) => {
+    const selectedCompany = companyLogoList.find(company => company.name === companyName);
+    if (selectedCompany) {
+      setSelectedCompany(companyName);
+      
+      setInvoice({
+        ...invoice,
+        logo: selectedCompany.logo,
+        marks: getMarksWithCompany(companyName),
+        additionalInfo: getInformationWithCompany(companyName)
+      });
+    }
+  };
+  
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setInvoice({
+        ...invoice,
+        logo: URL.createObjectURL(e.target.files[0])
+      });
+    }
+  };
+  
   return (
     <div className="min-h-screen flex flex-col container mx-auto w-full md:w-11/12 pt-24 items-center">
       <div className="w-full flex flex-col items-center bg-muted/20 p-4 px-2 rounded-md shadow-md">
@@ -143,19 +196,39 @@ export default function InvoiceGenerator() {
             >
               Logo <span className="text-muted-foreground">(optional)</span>
             </Label>
+            
+            <div className="mb-4">
+              <Label
+                htmlFor="companySelect"
+                className="text-purple-500 font-semibold text-start"
+              >
+                Company <span className="text-muted-foreground">(预设公司)</span>
+              </Label>
+              <Select
+                value={selectedCompany || ""}
+                onValueChange={handleCompanySelect}
+              >
+                <SelectTrigger className="w-full bg-muted/20 py-2 font-semibold">
+                  <SelectValue placeholder="Select company" />
+                </SelectTrigger>
+                <SelectContent>
+                  {companyLogoList.map((company) => (
+                    <SelectItem key={company.name} value={company.name}>
+                      {company.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="text-center text-muted-foreground mb-2">或者上传自定义 Logo</div>
+            
             <input
               type="file"
               id="logo"
               title="Upload your logo"
               className="w-24 h-24 hidden"
-              onChange={(e) =>
-                setInvoice({
-                  ...invoice,
-                  logo: e.target.files
-                    ? URL.createObjectURL(e.target.files[0])
-                    : invoice.logo,
-                })
-              }
+              onChange={handleLogoUpload}
             />
             <div className="w-full h-48 flex justify-center align-middle items-center">
               {!invoice.logo && (
@@ -180,13 +253,54 @@ export default function InvoiceGenerator() {
 
                   <button
                     className="bg-muted/20 font-semibold p-2 rounded-md w-full text-muted-foreground shadow-md"
-                    onClick={() => setInvoice({ ...invoice, logo: undefined })}
+                    onClick={() => {
+                      setInvoice({ ...invoice, logo: undefined });
+                      setSelectedCompany(null);
+                    }}
                   >
                     Remove Logo
                   </button>
                 </div>
               )}
             </div>
+            
+            {invoice.logo && (
+              <div className="mt-2">
+                <Label className="text-purple-500 font-semibold">Logo Position</Label>
+                <div className="flex gap-2 mt-1">
+                  <button
+                    className={`p-2 rounded-md flex-1 ${
+                      invoice.logoPosition === "left" 
+                        ? "bg-purple-500 text-white" 
+                        : "bg-muted/20"
+                    }`}
+                    onClick={() => setInvoice({ ...invoice, logoPosition: "left" })}
+                  >
+                    Left
+                  </button>
+                  <button
+                    className={`p-2 rounded-md flex-1 ${
+                      invoice.logoPosition === "center" 
+                        ? "bg-purple-500 text-white" 
+                        : "bg-muted/20"
+                    }`}
+                    onClick={() => setInvoice({ ...invoice, logoPosition: "center" })}
+                  >
+                    Center
+                  </button>
+                  <button
+                    className={`p-2 rounded-md flex-1 ${
+                      invoice.logoPosition === "right" 
+                        ? "bg-purple-500 text-white" 
+                        : "bg-muted/20"
+                    }`}
+                    onClick={() => setInvoice({ ...invoice, logoPosition: "right" })}
+                  >
+                    Right
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="grid w-full items-center bg-muted/20 p-2 rounded-md border-2">
@@ -455,19 +569,160 @@ export default function InvoiceGenerator() {
 
           <div className="grid w-full items-center bg-muted/20 p-2 rounded-md border-2">
             <Label
-              htmlFor="note"
+              htmlFor="additionalInfo"
               className="text-purple-500 font-semibold text-start"
             >
-              Note <span className="text-muted-foreground">(optional)</span>
+              Additional Information <span className="text-muted-foreground">(右上角信息)</span>
             </Label>
-            <Input
-              className="border-none focus-visible:ring-0 p-0 mt-0 font-semibold shadow-none"
-              type="text"
-              id="note"
-              placeholder="Additional Notes"
-              value={invoice.note}
-              onChange={(e) => setInvoice({ ...invoice, note: e.target.value })}
+            <textarea
+              className="border-none focus-visible:ring-0 p-0 mt-0 font-semibold shadow-none min-h-24 resize-y"
+              id="additionalInfo"
+              placeholder="公司地址、联系方式等信息"
+              value={invoice.additionalInfo}
+              onChange={(e) => setInvoice({ ...invoice, additionalInfo: e.target.value })}
             />
+            {selectedCompany && (
+              <button
+                className="bg-purple-500 text-white font-semibold p-2 rounded-md mt-2 shadow-md"
+                onClick={() => setInvoice({ 
+                  ...invoice, 
+                  additionalInfo: getInformationWithCompany(selectedCompany) 
+                })}
+              >
+                重置为公司默认信息
+              </button>
+            )}
+          </div>
+
+          <div className="grid w-full items-center bg-muted/20 p-2 rounded-md border-2">
+            <Label
+              htmlFor="marks"
+              className="text-purple-500 font-semibold text-start"
+            >
+              Marks <span className="text-muted-foreground">(左下角标记，包含备注)</span>
+            </Label>
+            <textarea
+              className="border-none focus-visible:ring-0 p-0 mt-0 font-semibold shadow-none min-h-24 resize-y"
+              id="marks"
+              placeholder="备注、银行信息等（支持多行）"
+              value={invoice.marks}
+              onChange={(e) => setInvoice({ ...invoice, marks: e.target.value })}
+            />
+            {selectedCompany && (
+              <button
+                className="bg-purple-500 text-white font-semibold p-2 rounded-md mt-2 shadow-md"
+                onClick={() => setInvoice({ 
+                  ...invoice, 
+                  marks: getMarksWithCompany(selectedCompany) 
+                })}
+              >
+                重置为公司默认标记
+              </button>
+            )}
+          </div>
+
+          <div className="grid w-full items-center bg-muted/20 p-2 rounded-md border-2">
+            <Label
+              htmlFor="signature"
+              className="text-purple-500 font-semibold text-start"
+            >
+              Signature/Stamp <span className="text-muted-foreground">(右下角签名/盖章)</span>
+            </Label>
+            <input
+              type="file"
+              id="signature"
+              title="Upload signature or stamp"
+              className="w-24 h-24 hidden"
+              onChange={(e) =>
+                setInvoice({
+                  ...invoice,
+                  signature: e.target.files
+                    ? URL.createObjectURL(e.target.files[0])
+                    : invoice.signature,
+                })
+              }
+            />
+            <div className="w-full h-32 flex justify-center align-middle items-center">
+              {!invoice.signature && (
+                <div
+                  className="w-24 h-24 flex flex-col items-center justify-center cursor-pointer font-bold gap-2"
+                  onClick={() => document.getElementById("signature")?.click()}
+                >
+                  <ImageIcon />
+                  <div>Upload Signature</div>
+                </div>
+              )}
+              {invoice.signature && (
+                <div className="p-2 w-full h-full bg-muted/40 flex flex-col items-center justify-between cursor-pointer font-bold gap-2">
+                  <Image
+                    src={invoice.signature}
+                    alt="Signature"
+                    width={128}
+                    height={128}
+                    className="object-contain cursor-pointer w-3/4 h-3/4"
+                    onClick={() => document.getElementById("signature")?.click()}
+                  />
+
+                  <button
+                    className="bg-muted/20 font-semibold p-2 rounded-md w-full text-muted-foreground shadow-md"
+                    onClick={() => setInvoice({ ...invoice, signature: undefined })}
+                  >
+                    Remove Signature
+                  </button>
+                </div>
+              )}
+            </div>
+            
+            <div className="mt-2">
+              <Label
+                htmlFor="signatureText"
+                className="text-purple-500 font-semibold text-start"
+              >
+                Signature User <span className="text-muted-foreground">(签名人)</span>
+              </Label>
+              <Select
+                value={invoice.signatureText}
+                onValueChange={handleUserSelect}
+              >
+                <SelectTrigger className="w-full bg-muted/20 py-2 font-semibold">
+                  <SelectValue placeholder="Select user" />
+                </SelectTrigger>
+                <SelectContent>
+                  {userInfoList.map((user) => (
+                    <SelectItem key={user.name} value={user.name}>
+                      {user.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="grid w-full items-center bg-muted/20 p-2 rounded-md border-2">
+            <Label
+              htmlFor="currency"
+              className="text-purple-500 font-semibold text-start"
+            >
+              Currency
+            </Label>
+            <Select
+              value={invoice.currency}
+              onValueChange={(value) => setInvoice({ ...invoice, currency: value })}
+            >
+              <SelectTrigger className="w-full bg-muted/20 py-2 font-semibold">
+                <SelectValue placeholder="Select currency" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="USD">USD ($)</SelectItem>
+                <SelectItem value="EUR">EUR (€)</SelectItem>
+                <SelectItem value="GBP">GBP (£)</SelectItem>
+                <SelectItem value="CNY">CNY (¥)</SelectItem>
+                <SelectItem value="JPY">JPY (¥)</SelectItem>
+                <SelectItem value="CAD">CAD ($)</SelectItem>
+                <SelectItem value="AUD">AUD ($)</SelectItem>
+                <SelectItem value="INR">INR (₹)</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Subtotal */}
@@ -625,23 +880,38 @@ export default function InvoiceGenerator() {
             </div>
           </div>
 
-          <PDFDownloadLink
-            className="bg-purple-500 text-white font-semibold p-2 rounded-md w-full shadow-md mt-4 text-center"
-            document={<InvoiceDocument invoice={invoice} />}
-            fileName={
-              (invoice.type === "custom" ? invoice.customType : invoice.type) +
-              "-" +
-              invoice.invnumber +
-              ".pdf"
-            }
-          >
-            Generate Invoice
-          </PDFDownloadLink>
+          {isClient ? (
+            <PDFDownloadLink
+              className="bg-purple-500 text-white font-semibold p-2 rounded-md w-full shadow-md mt-4 text-center"
+              document={<InvoiceDocument invoice={invoice} />}
+              fileName={
+                (invoice.type === "custom" ? invoice.customType : invoice.type) +
+                "-" +
+                invoice.invnumber +
+                ".pdf"
+              }
+            >
+              {({ loading }) => (loading ? '正在准备文档...' : '生成发票')}
+            </PDFDownloadLink>
+          ) : (
+            <button
+              className="bg-purple-500 text-white font-semibold p-2 rounded-md w-full shadow-md mt-4 text-center opacity-50 cursor-not-allowed"
+              disabled
+            >
+              正在加载...
+            </button>
+          )}
         </div>
         <div className="hidden md:block w-full h-screen shadow-md p-4">
-          <PDFViewer width="100%" height="100%">
-            <InvoiceDocument invoice={invoice} />
-          </PDFViewer>
+          {isClient ? (
+            <PDFViewer width="100%" height="100%">
+              <InvoiceDocument invoice={invoice} />
+            </PDFViewer>
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-gray-100">
+              <p className="text-gray-500">正在加载预览...</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
