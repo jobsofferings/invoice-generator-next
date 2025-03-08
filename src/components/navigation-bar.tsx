@@ -27,7 +27,7 @@ export default function NavigationBar() {
             passHref
             className="font-black text-md align-middle cursor-pointer"
           >
-            <span className="text-purple-500">invoice.</span>flightdev.co
+            <span className="text-purple-500">invoice-generator-next.</span>vercel.app
           </Link>
 
           <div className="flex justify-between align-middle items-center">

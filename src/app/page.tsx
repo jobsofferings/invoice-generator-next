@@ -106,6 +106,8 @@ export default function InvoiceGenerator() {
       setInvoice({
         ...invoice,
         logo: selectedCompany.logo,
+        logoPosition: "left",
+        from: companyName,
         marks: getMarksWithCompany(companyName),
         additionalInfo: getInformationWithCompany(companyName)
       });
@@ -113,24 +115,40 @@ export default function InvoiceGenerator() {
   };
   
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
+    if (e.target.files && e.target.files[0]) {
       setInvoice({
         ...invoice,
-        logo: URL.createObjectURL(e.target.files[0])
+        logo: URL.createObjectURL(e.target.files[0]),
+        logoPosition: "left"
       });
     }
   };
   
+  const handleRemoveLogo = () => {
+    setInvoice({
+      ...invoice,
+      logo: undefined
+    });
+    setSelectedCompany(null);
+  };
+  
+  const handleRemoveItem = (index: number) => {
+    setInvoice({
+      ...invoice,
+      items: invoice.items.filter((_, iindex) => iindex !== index)
+    });
+  };
+  
   return (
     <div className="min-h-screen flex flex-col container mx-auto w-full md:w-11/12 pt-24 items-center">
-      <div className="w-full flex flex-col items-center bg-muted/20 p-4 px-2 rounded-md shadow-md">
+      {/* <div className="w-full flex flex-col items-center bg-muted/20 p-4 px-2 rounded-md shadow-md">
         <div className="text-primary font-black text-xl w-full text-center uppercase">
           Free Invoice Generator
         </div>
         <div className="text-center text-muted-foreground w-11/12 font-medium">
           Create an invoice with our free invoice generator in seconds.
         </div>
-      </div>
+      </div> */}
 
       <div className="flex flex-row justify-center md:justify-between w-full bg-muted/20 mt-4 p-4 rounded-md">
         <div className="rounded-md w-full p-4 flex flex-col gap-6 justify-center align-middle items-center">
@@ -147,7 +165,7 @@ export default function InvoiceGenerator() {
                 <div className="flex flex-col gap-1">
                   <Label
                     htmlFor="customType"
-                    className="text-purple-500 font-semibold text-start"
+                    className="text-purple-500 font-semibold text-start label-with-margin"
                   >
                     Type
                   </Label>
@@ -188,40 +206,40 @@ export default function InvoiceGenerator() {
             </div>
           )}
 
-          {/* logo */}
+          <div className="grid w-full items-center bg-muted/20 p-2 rounded-md border-2">
+            <Label
+              htmlFor="currency"
+              className="text-purple-500 font-semibold text-start label-with-margin"
+            >
+              Currency
+            </Label>
+            <Select
+              value={invoice.currency}
+              onValueChange={(value) => setInvoice({ ...invoice, currency: value })}
+            >
+              <SelectTrigger className="w-full bg-muted/20 py-2 font-semibold">
+                <SelectValue placeholder="Select currency" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="USD">USD ($)</SelectItem>
+                <SelectItem value="EUR">EUR (€)</SelectItem>
+                <SelectItem value="GBP">GBP (£)</SelectItem>
+                <SelectItem value="CNY">CNY (¥)</SelectItem>
+                <SelectItem value="JPY">JPY (¥)</SelectItem>
+                <SelectItem value="CAD">CAD ($)</SelectItem>
+                <SelectItem value="AUD">AUD ($)</SelectItem>
+                <SelectItem value="INR">INR (₹)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           <div className="grid w-full items-center bg-muted/20 p-2 rounded-md border-2">
             <Label
               htmlFor="logo"
-              className="text-purple-500 font-semibold text-start"
+              className="text-purple-500 font-semibold text-start label-with-margin"
             >
               Logo <span className="text-muted-foreground">(optional)</span>
             </Label>
-            
-            <div className="mb-4">
-              <Label
-                htmlFor="companySelect"
-                className="text-purple-500 font-semibold text-start"
-              >
-                Company <span className="text-muted-foreground">(预设公司)</span>
-              </Label>
-              <Select
-                value={selectedCompany || ""}
-                onValueChange={handleCompanySelect}
-              >
-                <SelectTrigger className="w-full bg-muted/20 py-2 font-semibold">
-                  <SelectValue placeholder="Select company" />
-                </SelectTrigger>
-                <SelectContent>
-                  {companyLogoList.map((company) => (
-                    <SelectItem key={company.name} value={company.name}>
-                      {company.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="text-center text-muted-foreground mb-2">或者上传自定义 Logo</div>
             
             <input
               type="file"
@@ -253,10 +271,7 @@ export default function InvoiceGenerator() {
 
                   <button
                     className="bg-muted/20 font-semibold p-2 rounded-md w-full text-muted-foreground shadow-md"
-                    onClick={() => {
-                      setInvoice({ ...invoice, logo: undefined });
-                      setSelectedCompany(null);
-                    }}
+                    onClick={handleRemoveLogo}
                   >
                     Remove Logo
                   </button>
@@ -264,49 +279,35 @@ export default function InvoiceGenerator() {
               )}
             </div>
             
-            {invoice.logo && (
-              <div className="mt-2">
-                <Label className="text-purple-500 font-semibold">Logo Position</Label>
-                <div className="flex gap-2 mt-1">
-                  <button
-                    className={`p-2 rounded-md flex-1 ${
-                      invoice.logoPosition === "left" 
-                        ? "bg-purple-500 text-white" 
-                        : "bg-muted/20"
-                    }`}
-                    onClick={() => setInvoice({ ...invoice, logoPosition: "left" })}
-                  >
-                    Left
-                  </button>
-                  <button
-                    className={`p-2 rounded-md flex-1 ${
-                      invoice.logoPosition === "center" 
-                        ? "bg-purple-500 text-white" 
-                        : "bg-muted/20"
-                    }`}
-                    onClick={() => setInvoice({ ...invoice, logoPosition: "center" })}
-                  >
-                    Center
-                  </button>
-                  <button
-                    className={`p-2 rounded-md flex-1 ${
-                      invoice.logoPosition === "right" 
-                        ? "bg-purple-500 text-white" 
-                        : "bg-muted/20"
-                    }`}
-                    onClick={() => setInvoice({ ...invoice, logoPosition: "right" })}
-                  >
-                    Right
-                  </button>
-                </div>
-              </div>
-            )}
+            <div className="mt-4">
+              <Label
+                htmlFor="companySelect"
+                className="text-purple-500 font-semibold text-start label-with-margin"
+              >
+                Company <span className="text-muted-foreground">(预设公司)</span>
+              </Label>
+              <Select
+                value={selectedCompany || ""}
+                onValueChange={handleCompanySelect}
+              >
+                <SelectTrigger className="w-full bg-muted/20 py-2 font-semibold">
+                  <SelectValue placeholder="Select company" />
+                </SelectTrigger>
+                <SelectContent>
+                  {companyLogoList.map((company) => (
+                    <SelectItem key={company.name} value={company.name}>
+                      {company.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <div className="grid w-full items-center bg-muted/20 p-2 rounded-md border-2">
             <Label
               htmlFor="from"
-              className="text-purple-500 font-semibold text-start"
+              className="text-purple-500 font-semibold text-start label-with-margin"
             >
               From
             </Label>
@@ -323,7 +324,7 @@ export default function InvoiceGenerator() {
           <div className="grid w-full items-center bg-muted/20 p-2 rounded-md border-2">
             <Label
               htmlFor="to"
-              className="text-purple-500 font-semibold text-start"
+              className="text-purple-500 font-semibold text-start label-with-margin"
             >
               To
             </Label>
@@ -340,7 +341,7 @@ export default function InvoiceGenerator() {
           <div className="grid w-full items-center bg-muted/20 p-2 rounded-md border-2">
             <Label
               htmlFor="invnumber"
-              className="text-purple-500 font-semibold text-start"
+              className="text-purple-500 font-semibold text-start label-with-margin"
             >
               Invoice #
             </Label>
@@ -359,7 +360,7 @@ export default function InvoiceGenerator() {
           <div className="grid w-full items-center bg-muted/20 p-2 rounded-md border-2">
             <Label
               htmlFor="date"
-              className="text-purple-500 font-semibold text-start"
+              className="text-purple-500 font-semibold text-start label-with-margin"
             >
               Date Created
             </Label>
@@ -387,7 +388,7 @@ export default function InvoiceGenerator() {
           <div className="grid w-full items-center bg-muted/20 p-2 rounded-md border-2">
             <Label
               htmlFor="due"
-              className="text-purple-500 font-semibold text-start"
+              className="text-purple-500 font-semibold text-start label-with-margin"
             >
               Due Date
             </Label>
@@ -415,7 +416,7 @@ export default function InvoiceGenerator() {
           <div className="grid w-full items-center bg-muted/20 p-4 rounded-md">
             <Label
               htmlFor="items"
-              className="text-purple-500 font-semibold text-center text-lg"
+              className="text-purple-500 font-semibold text-center text-lg label-with-margin"
             >
               Items
             </Label>
@@ -426,14 +427,14 @@ export default function InvoiceGenerator() {
               >
                 <Label
                   htmlFor={`item-${index}`}
-                  className="text-purple-500 font-semibold text-center p-2"
+                  className="text-purple-500 font-semibold text-center p-2 label-with-margin"
                 >
                   Item {index + 1}
                 </Label>
                 <div className="grid w-full items-center p-2 rounded-md border-2">
                   <Label
                     htmlFor={`description-${index}`}
-                    className="text-purple-500 font-semibold text-start"
+                    className="text-purple-500 font-semibold text-start label-with-margin"
                   >
                     Description
                   </Label>
@@ -458,7 +459,7 @@ export default function InvoiceGenerator() {
                 <div className="grid w-full items-center p-2 rounded-md border-2">
                   <Label
                     htmlFor={`price-${index}`}
-                    className="text-purple-500 font-semibold text-start"
+                    className="text-purple-500 font-semibold text-start label-with-margin"
                   >
                     Price
                   </Label>
@@ -483,7 +484,7 @@ export default function InvoiceGenerator() {
                 <div className="grid w-full items-center p-2 rounded-md border-2">
                   <Label
                     htmlFor={`quantity-${index}`}
-                    className="text-purple-500 font-semibold text-start"
+                    className="text-purple-500 font-semibold text-start label-with-margin"
                   >
                     Quantity
                   </Label>
@@ -509,7 +510,7 @@ export default function InvoiceGenerator() {
                 <div className="grid w-full items-center p-2 rounded-md border-2">
                   <Label
                     htmlFor={`note-${index}`}
-                    className="text-purple-500 font-semibold text-start"
+                    className="text-purple-500 font-semibold text-start label-with-margin"
                   >
                     Note{" "}
                     <span className="text-muted-foreground">(optional)</span>
@@ -532,15 +533,9 @@ export default function InvoiceGenerator() {
                 </div>
 
                 <button
-                  className="bg-red-500/20 border border-red-500 text-red-500 font-semibold p-2 rounded-md w-full shadow-md mt-62"
-                  onClick={() =>
-                    setInvoice({
-                      ...invoice,
-                      items: invoice.items.filter(
-                        (_, iindex) => iindex != index
-                      ),
-                    })
-                  }
+                  className={`bg-red-500/20 border border-red-500 text-red-500 font-semibold p-2 rounded-md w-full shadow-md mt-62 ${invoice.items.length <= 1 ? 'cursor-not-allowed' : ''}`}
+                  disabled={invoice.items.length <= 1}
+                  onClick={() => handleRemoveItem(index)}
                 >
                   Remove Item
                 </button>
@@ -570,7 +565,7 @@ export default function InvoiceGenerator() {
           <div className="grid w-full items-center bg-muted/20 p-2 rounded-md border-2">
             <Label
               htmlFor="additionalInfo"
-              className="text-purple-500 font-semibold text-start"
+              className="text-purple-500 font-semibold text-start label-with-margin"
             >
               Additional Information <span className="text-muted-foreground">(右上角信息)</span>
             </Label>
@@ -597,7 +592,7 @@ export default function InvoiceGenerator() {
           <div className="grid w-full items-center bg-muted/20 p-2 rounded-md border-2">
             <Label
               htmlFor="marks"
-              className="text-purple-500 font-semibold text-start"
+              className="text-purple-500 font-semibold text-start label-with-margin"
             >
               Marks <span className="text-muted-foreground">(左下角标记，包含备注)</span>
             </Label>
@@ -624,7 +619,7 @@ export default function InvoiceGenerator() {
           <div className="grid w-full items-center bg-muted/20 p-2 rounded-md border-2">
             <Label
               htmlFor="signature"
-              className="text-purple-500 font-semibold text-start"
+              className="text-purple-500 font-semibold text-start label-with-margin"
             >
               Signature/Stamp <span className="text-muted-foreground">(右下角签名/盖章)</span>
             </Label>
@@ -636,7 +631,7 @@ export default function InvoiceGenerator() {
               onChange={(e) =>
                 setInvoice({
                   ...invoice,
-                  signature: e.target.files
+                  signature: e.target.files && e.target.files[0]
                     ? URL.createObjectURL(e.target.files[0])
                     : invoice.signature,
                 })
@@ -676,7 +671,7 @@ export default function InvoiceGenerator() {
             <div className="mt-2">
               <Label
                 htmlFor="signatureText"
-                className="text-purple-500 font-semibold text-start"
+                className="text-purple-500 font-semibold text-start label-with-margin"
               >
                 Signature User <span className="text-muted-foreground">(签名人)</span>
               </Label>
@@ -695,44 +690,6 @@ export default function InvoiceGenerator() {
                   ))}
                 </SelectContent>
               </Select>
-            </div>
-          </div>
-
-          <div className="grid w-full items-center bg-muted/20 p-2 rounded-md border-2">
-            <Label
-              htmlFor="currency"
-              className="text-purple-500 font-semibold text-start"
-            >
-              Currency
-            </Label>
-            <Select
-              value={invoice.currency}
-              onValueChange={(value) => setInvoice({ ...invoice, currency: value })}
-            >
-              <SelectTrigger className="w-full bg-muted/20 py-2 font-semibold">
-                <SelectValue placeholder="Select currency" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="USD">USD ($)</SelectItem>
-                <SelectItem value="EUR">EUR (€)</SelectItem>
-                <SelectItem value="GBP">GBP (£)</SelectItem>
-                <SelectItem value="CNY">CNY (¥)</SelectItem>
-                <SelectItem value="JPY">JPY (¥)</SelectItem>
-                <SelectItem value="CAD">CAD ($)</SelectItem>
-                <SelectItem value="AUD">AUD ($)</SelectItem>
-                <SelectItem value="INR">INR (₹)</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Subtotal */}
-          <div className="w-full flex justify-between p-2 font-bold text-lg bg-muted/20 border rounded-md">
-            <div>Subtotal</div>
-            <div className="text-purple-500">
-              {invoice.items.reduce(
-                (acc, item) => acc + item.price * item.quantity,
-                0
-              )}
             </div>
           </div>
 
@@ -914,6 +871,12 @@ export default function InvoiceGenerator() {
           )}
         </div>
       </div>
+
+      <style jsx global>{`
+        .label-with-margin {
+          margin-bottom: 4px;
+        }
+      `}</style>
     </div>
   );
 }

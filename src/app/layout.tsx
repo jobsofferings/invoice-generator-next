@@ -63,7 +63,7 @@ export default function RootLayout({
         >
           <NavigationBar />
           {children}
-          <a
+          {/* <a
             className="flex w-full justify-center p-2"
             href="https://flightdev.co"
             target="_blank"
@@ -73,7 +73,7 @@ export default function RootLayout({
               Designed and Created By{" "}
               <div className="font-black text-lg">FLIGHTDEV.CO</div>
             </div>
-          </a>
+          </a> */}
         </ThemeProvider>
       </body>
     </html>

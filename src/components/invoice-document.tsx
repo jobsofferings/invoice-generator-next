@@ -22,23 +22,13 @@ const styles = StyleSheet.create({
     textAlign: "center",
     textTransform: "uppercase",
   },
-  logoLeft: {
+  logo: {
     width: 100,
-    height: 100,
+    height: "auto",
+    maxHeight: 100,
     marginBottom: 10,
     alignSelf: "flex-start",
-  },
-  logoCenter: {
-    width: 100,
-    height: 100,
-    marginBottom: 10,
-    alignSelf: "center",
-  },
-  logoRight: {
-    width: 100,
-    height: 100,
-    marginBottom: 10,
-    alignSelf: "flex-end",
+    objectFit: "contain",
   },
   section: {
     marginBottom: 15,
@@ -76,7 +66,7 @@ const styles = StyleSheet.create({
     right: 30,
     maxWidth: 180,
     fontSize: 10,
-    textAlign: "right",
+    textAlign: "left",
   },
   marksSection: {
     position: "absolute",
@@ -141,18 +131,6 @@ const InvoiceDocument: React.FC<InvoiceDocumentProps> = ({ invoice }) => {
   // 设置默认货币单位
   const currency = invoice.currency || "USD";
   
-  // 根据 logoPosition 选择对应的样式
-  const getLogoStyle = () => {
-    switch (invoice.logoPosition) {
-      case "center":
-        return styles.logoCenter;
-      case "right":
-        return styles.logoRight;
-      default:
-        return styles.logoLeft;
-    }
-  };
-  
   // 将多行文本转换为数组
   const splitTextToLines = (text?: string) => {
     return text ? text.split('\n').filter(line => line.trim() !== '') : [];
@@ -184,9 +162,9 @@ const InvoiceDocument: React.FC<InvoiceDocumentProps> = ({ invoice }) => {
           </View>
         )}
         
-        {/* Logo */}
+        {/* Logo - 使用固定样式 */}
         {invoice.logo ? (
-          <PDFImage src={invoice.logo} style={getLogoStyle()} />
+          <PDFImage src={invoice.logo} style={styles.logo} />
         ) : null}
 
         {/* Header */}
